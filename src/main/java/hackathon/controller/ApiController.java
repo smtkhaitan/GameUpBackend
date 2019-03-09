@@ -10,6 +10,7 @@ import com.google.gson.JsonObject;
 import hackathon.pojo.BookingDetails;
 import hackathon.pojo.LoginDetails;
 import hackathon.pojo.PairUp;
+import hackathon.pojo.SelfRegistration;
 import hackathon.pojo.UserInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.mvel2.templates.TemplateRuntime;
@@ -98,7 +99,41 @@ public class ApiController {
         return new ResponseEntity<>("Try Again", HttpStatus.BAD_REQUEST);
     }
 
-    public static boolean signUpDbInsert(HashMap contextMap) throws Exception {
+    @RequestMapping(value = {"/v1/gameUp/selfRegistration"}, method = RequestMethod.POST)
+    public ResponseEntity<String> selfRegistration(@RequestBody String selfRegistrationJson) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            SelfRegistration selfRegistration = mapper.readValue(selfRegistrationJson, SelfRegistration.class);
+            if (StringUtils.isEmpty(selfRegistration.getEmail()) || StringUtils.isEmpty(selfRegistration.getGame_type())
+                    || StringUtils.isEmpty(selfRegistration.getGame_time())
+                    || StringUtils.isEmpty(selfRegistration.getLatitude())
+                    || StringUtils.isEmpty(selfRegistration.getLongitude())) {
+                return new ResponseEntity<>("Information can't be empty", HttpStatus.BAD_REQUEST);
+            }
+
+            Connection connection = getConnection();
+
+            //verify if user is present in the db.
+            String rawQuery = Resources.toString(Resources.getResource("selfRegistration.sql"), Charsets.UTF_8);
+            HashMap<String, String> contextMap = new HashMap<>();
+            contextMap.put("user_email", selfRegistration.getEmail());
+            contextMap.put("game_type", selfRegistration.getGame_type());
+            contextMap.put("game_time", selfRegistration.getGame_time());
+            contextMap.put("lat_long", selfRegistration.getLatitude() + "#" + selfRegistration.getLongitude());
+            String parsedQuery = (String) TemplateRuntime.eval(rawQuery, contextMap);
+
+            try (Statement statement = connection.createStatement()) {
+                statement.execute(parsedQuery);
+                connection.close();
+                return new ResponseEntity<>("Successfull", HttpStatus.ACCEPTED);
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            return new ResponseEntity<>("Failed Try Again", HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    private static boolean signUpDbInsert(HashMap contextMap) throws Exception {
         try {
             Connection connection = getConnection();
             System.out.println("Query data example:");
@@ -123,7 +158,7 @@ public class ApiController {
         return true;
     }
 
-    public HashMap<String, String> getContextMap(UserInfo userInfo) {
+    private HashMap<String, String> getContextMap(UserInfo userInfo) {
         HashMap<String, String> contextMap = new HashMap<>();
         contextMap.put("NAME", userInfo.getName());
         contextMap.put("email", userInfo.getEmail());
@@ -137,14 +172,15 @@ public class ApiController {
         return contextMap;
     }
 
-    public static boolean userExistAlreadyInDB(HashMap contextMap, Statement statement) throws IOException, SQLException {
+    private static boolean userExistAlreadyInDB(HashMap contextMap, Statement statement)
+            throws IOException, SQLException {
         String rawQuery = Resources.toString(Resources.getResource("verify.sql"), Charsets.UTF_8);
         String parsedQuery = (String) TemplateRuntime.eval(rawQuery, contextMap);
         ResultSet resultSet = statement.executeQuery(parsedQuery);
         return resultSet.next();
     }
 
-    public static Connection getConnection() throws SQLException {
+    private static Connection getConnection() throws SQLException {
         String url = "jdbc:sqlserver://codiecon.database.windows.net:1433;database=codeicon;" +
                 "user=satish@codiecon;" +
                 "password=Nitssats123;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;" +
@@ -173,7 +209,7 @@ public class ApiController {
 
         List<BookingDetails> bookingDetailsList = getBookingDetails(userInfo.getEmail());
         JsonElement element = gson.toJsonTree(bookingDetailsList, new TypeToken<List<BookingDetails>>() {
-            }.getType());
+        }.getType());
         jsonObject.addProperty("bookingDetailsList", element.getAsJsonArray().toString());
 
         List<PairUp> pairUpList = getPairUpList(userInfo, loginDetails);
@@ -221,7 +257,7 @@ public class ApiController {
         return (df2.format(gameDate).equals(df2.format(currentDate)));
     }
 
-    public static double distance(double lat1, double lat2, double lon1, double lon2) {
+    private static double distance(double lat1, double lat2, double lon1, double lon2) {
 
         // The math module contains a function
         // named toRadians which converts from
@@ -236,7 +272,7 @@ public class ApiController {
         double dlat = lat2 - lat1;
         double a = Math.pow(Math.sin(dlat / 2), 2)
                 + Math.cos(lat1) * Math.cos(lat2)
-                * Math.pow(Math.sin(dlon / 2),2);
+                * Math.pow(Math.sin(dlon / 2), 2);
 
         double c = 2 * Math.asin(Math.sqrt(a));
 
@@ -245,7 +281,7 @@ public class ApiController {
         double r = 6371;
 
         // calculate the result
-        return(c * r) * 1000;
+        return (c * r) * 1000;
     }
 
     private static List<PairUp> getPairUpList(UserInfo userInfo, LoginDetails loginDetails) throws Exception {
@@ -257,25 +293,27 @@ public class ApiController {
         String parsedQuery = (String) TemplateRuntime.eval(rawQuery, contextMap);
         System.out.println(parsedQuery);
         try (Statement statement = connection.createStatement()) {
-                ResultSet resultSet = statement.executeQuery(parsedQuery);
-                while (resultSet.next()) {
-                    double loggedUserLat = Double.parseDouble(loginDetails.getLatitude());
-                    double loggedUserLong = Double.parseDouble(loginDetails.getLongitude());
-                    double pairedUserLat = Double.parseDouble(resultSet.getString("lat_long").split("#")[0]);
-                    double pairedUserLong = Double.parseDouble(resultSet.getString("lat_long").split("#")[1]);
-                    double distance = distance(loggedUserLat, pairedUserLat, loggedUserLong, pairedUserLong);
-                    System.out.println(distance);
-                    if(distance < 5000L && todaysDate(resultSet.getString("game_time"))) {
-                        PairUp pairUp = new PairUp();
-                        pairUp.setAgeGroup(resultSet.getString("age_grp"));
-                        pairUp.setEmail(resultSet.getString("email"));
-                        pairUp.setGame(resultSet.getString("game_type"));
-                        pairUp.setGender(resultSet.getString("gender"));
-                        pairUp.setName(resultSet.getString("name"));
-                        pairUp.setTime(resultSet.getString("game_time"));
-                        pairUpList.add(pairUp);
-                    }
+            ResultSet resultSet = statement.executeQuery(parsedQuery);
+            while (resultSet.next()) {
+                double loggedUserLat = Double.parseDouble(loginDetails.getLatitude());
+                double loggedUserLong = Double.parseDouble(loginDetails.getLongitude());
+                double pairedUserLat = Double.parseDouble(resultSet.getString("lat_long").split("#")[0]);
+                double pairedUserLong = Double.parseDouble(resultSet.getString("lat_long").split("#")[1]);
+                double distance = distance(loggedUserLat, pairedUserLat, loggedUserLong, pairedUserLong);
+                System.out.println(distance);
+                if (distance < 5000L && todaysDate(resultSet.getString("game_time"))) {
+                    PairUp pairUp = new PairUp();
+                    pairUp.setAgeGroup(resultSet.getString("age_grp"));
+                    pairUp.setEmail(resultSet.getString("email"));
+                    pairUp.setGame(resultSet.getString("game_type"));
+                    pairUp.setGender(resultSet.getString("gender"));
+                    pairUp.setName(resultSet.getString("name"));
+                    pairUp.setTime(resultSet.getString("game_time"));
+                    pairUp.setLatitude(Double.toString(pairedUserLat));
+                    pairUp.setLongitude(Double.toString(pairedUserLong));
+                    pairUpList.add(pairUp);
                 }
+            }
         } catch (Exception e) {
             e.printStackTrace();
             connection.close();
