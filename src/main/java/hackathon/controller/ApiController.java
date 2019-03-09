@@ -2,6 +2,7 @@ package hackathon.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
+import com.google.common.base.Preconditions;
 import com.google.common.io.Resources;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
@@ -10,6 +11,7 @@ import com.google.gson.JsonObject;
 import hackathon.pojo.BookingDetails;
 import hackathon.pojo.LoginDetails;
 import hackathon.pojo.PairUp;
+import hackathon.pojo.PairUpRegistration;
 import hackathon.pojo.SelfRegistration;
 import hackathon.pojo.UserInfo;
 import lombok.extern.slf4j.Slf4j;
@@ -113,16 +115,80 @@ public class ApiController {
 
             Connection connection = getConnection();
 
-            //verify if user is present in the db.
             String rawQuery = Resources.toString(Resources.getResource("selfRegistration.sql"), Charsets.UTF_8);
             HashMap<String, String> contextMap = new HashMap<>();
             contextMap.put("user_email", selfRegistration.getEmail());
             contextMap.put("game_type", selfRegistration.getGame_type());
             contextMap.put("game_time", selfRegistration.getGame_time());
+            contextMap.put("paired", "0");
             contextMap.put("lat_long", selfRegistration.getLatitude() + "#" + selfRegistration.getLongitude());
             String parsedQuery = (String) TemplateRuntime.eval(rawQuery, contextMap);
 
             try (Statement statement = connection.createStatement()) {
+                statement.execute(parsedQuery);
+                connection.close();
+                return new ResponseEntity<>("Successfull", HttpStatus.ACCEPTED);
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            return new ResponseEntity<>("Failed Try Again", HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @RequestMapping(value = {"/v1/gameUp/pairUpRegistration"}, method = RequestMethod.POST)
+    public ResponseEntity<String> pairUpRegistration(@RequestBody String pairUpRegistrationJson) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            PairUpRegistration pairUpRegistration = mapper.readValue(pairUpRegistrationJson, PairUpRegistration.class);
+            if (StringUtils.isEmpty(pairUpRegistration.getUser1_email())
+                    || StringUtils.isEmpty(pairUpRegistration.getUser2_email())
+                    || StringUtils.isEmpty(pairUpRegistration.getGame_time())
+                    || StringUtils.isEmpty(pairUpRegistration.getGame_type())) {
+                return new ResponseEntity<>("Information can't be empty", HttpStatus.BAD_REQUEST);
+            }
+
+            Connection connection = getConnection();
+
+            String rawQuery = Resources.toString(Resources
+                    .getResource("selfRegistration.sql"), Charsets.UTF_8);
+            HashMap<String, String> contextMap = new HashMap<>();
+
+            // user1 is the one who is logged in. Entry for user2 will already be there in the db, need to set its
+            // paired status as 1
+            contextMap.put("user_email", pairUpRegistration.getUser1_email());
+            contextMap.put("game_type", pairUpRegistration.getGame_type());
+            contextMap.put("game_time", pairUpRegistration.getGame_time());
+            contextMap.put("paired", "1");
+
+            //@todo:sumit.khaitan come up with a better logic .Keeping this as default for now
+            contextMap.put("lat_long", "999999#999999");
+            String parsedQuery = (String) TemplateRuntime.eval(rawQuery, contextMap);
+
+            try (Statement statement = connection.createStatement()) {
+                statement.execute(parsedQuery);
+
+                // need to update paired status for user 2
+                rawQuery = Resources.toString(Resources
+                        .getResource("selfRegistrationUpdatePairedStatus.sql"), Charsets.UTF_8);
+                contextMap.clear();
+                contextMap.put("user_email", pairUpRegistration.getUser2_email());
+                contextMap.put("game_type", pairUpRegistration.getGame_type());
+                contextMap.put("game_time", pairUpRegistration.getGame_time());
+                //@todo:sumit.khaitan come up with a better logic .Keeping this as default for now
+                contextMap.put("lat_long", "-1#-1");
+
+                parsedQuery = (String) TemplateRuntime.eval(rawQuery, contextMap);
+                statement.execute(parsedQuery);
+
+
+                //need to make entry in paired table as well
+                rawQuery = Resources.toString(Resources.getResource("pairUpEntry.sql"), Charsets.UTF_8);
+                contextMap.clear();
+                contextMap.put("user1_email", pairUpRegistration.getUser1_email());
+                contextMap.put("user2_email", pairUpRegistration.getUser2_email());
+                contextMap.put("game_type", pairUpRegistration.getGame_type());
+                contextMap.put("game_time", pairUpRegistration.getGame_time());
+                parsedQuery = (String) TemplateRuntime.eval(rawQuery, contextMap);
                 statement.execute(parsedQuery);
                 connection.close();
                 return new ResponseEntity<>("Successfull", HttpStatus.ACCEPTED);
