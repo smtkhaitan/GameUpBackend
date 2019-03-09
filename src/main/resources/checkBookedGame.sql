@@ -1,0 +1,1 @@
+select * from dbo.tournament_booked where user1_email = '@{email}';
