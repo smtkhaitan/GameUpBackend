@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 @Data
 @ToString
-public class UserInfo {
+public class UserPreference {
     public String clusterTags;
     public String answers;
 }

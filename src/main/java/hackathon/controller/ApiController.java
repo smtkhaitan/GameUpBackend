@@ -38,30 +38,31 @@ import java.util.List;
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 public class ApiController {
 
-    @RequestMapping(value = {"/livhack/saveUserPreferences",method = RequestMethod.POST})
-    public ResponseEntity<string> saveUserPreferences(@RequestBody String userPreferencesJson){
-        try{
+    @RequestMapping(value = { "/livhack/saveUserPreferences" }, method = RequestMethod.POST)
+
+    public ResponseEntity<String> saveUserPreferences(@RequestBody String userPreferencesJson) {
+        try {
             ObjectMapper mapper = new ObjectMapper();
-            UserPreference UserPreference = mapper.readValue(@RequestBody String userPreferencesJson)
+            UserPreference UserPreference = mapper.readValue(userPreferencesJson, UserPreference.class);
             if (insertUserPref(getContextMap(UserPreference))) {
                 return new ResponseEntity<>("SignUpSuccessfull", HttpStatus.ACCEPTED);
             } else {
                 return new ResponseEntity<>("UserAlready Exist", HttpStatus.NOT_ACCEPTABLE);
             }
-        }catch(Exception e){
-            log.error(e.getMessage());
-            return new ResponseEntity<>("Failed Try Again",HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            // log.error(e.getMessage());
+            return new ResponseEntity<>("Failed Try Again", HttpStatus.BAD_REQUEST);
         }
     }
 
-    private HashMap<String, String> getContextMap(UserInfo userInfo) {
+    private HashMap<String, String> getContextMap(UserPreference userPreference) {
         HashMap<String, String> contextMap = new HashMap<>();
-        contextMap.put("clusterTags", userInfo.clusterTags());
-        contextMap.put("answers", userInfo.answers());
+        contextMap.put("clusterTags", userPreference.clusterTags);
+        contextMap.put("answers", userPreference.answers);
         return contextMap;
     }
 
-     private static boolean insertUserPref(HashMap contextMap) throws Exception {
+    private static boolean insertUserPref(HashMap contextMap) throws Exception {
         try {
             Connection connection = getConnection();
             System.out.println("Query data example:");
@@ -82,10 +83,9 @@ public class ApiController {
     }
 
     private static Connection getConnection() throws SQLException {
-        String url = "jdbc:sqlserver://codiecon.database.windows.net:1433;database=codeicon;" +
-                "user=satish@codiecon;" +
-                "password=Nitssats123;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;" +
-                "loginTimeout=30;";
+        String url = "jdbc:sqlserver://codiecon.database.windows.net:1433;database=codeicon;" + "user=satish@codiecon;"
+                + "password=Nitssats123;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;"
+                + "loginTimeout=30;";
         Connection connection = null;
         return DriverManager.getConnection(url);
     }
