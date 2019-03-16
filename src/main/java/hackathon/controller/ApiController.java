@@ -50,15 +50,16 @@ public class ApiController {
                 return new ResponseEntity<>("UserAlready Exist", HttpStatus.NOT_ACCEPTABLE);
             }
         } catch (Exception e) {
-            // log.error(e.getMessage());
+            log.error(e.getMessage());
             return new ResponseEntity<>("Failed Try Again", HttpStatus.BAD_REQUEST);
         }
     }
 
     private HashMap<String, String> getContextMap(UserPreference userPreference) {
         HashMap<String, String> contextMap = new HashMap<>();
-        contextMap.put("clusterTags", userPreference.clusterTags);
+        contextMap.put("cluster_tag", userPreference.cluster_tag);
         contextMap.put("answers", userPreference.answers);
+        contextMap.put("user_id", userPreference.user_id);
         return contextMap;
     }
 

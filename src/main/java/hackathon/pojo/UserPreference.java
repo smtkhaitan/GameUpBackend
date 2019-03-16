@@ -8,6 +8,7 @@ import java.util.ArrayList;
 @Data
 @ToString
 public class UserPreference {
-    public String clusterTags;
+    public String cluster_tag;
     public String answers;
+    public String user_id;
 }
