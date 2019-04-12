@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
@@ -45,6 +46,7 @@ public class ApiController {
 
     @RequestMapping(value = {"/v1/gameUp/signUp"}, method = RequestMethod.POST)
     public ResponseEntity<String> signUp(@RequestBody String userInfoJson) {
+        System.out.println("In SignUp");
         try {
             ObjectMapper mapper = new ObjectMapper();
             UserInfo userInfo = mapper.readValue(userInfoJson, UserInfo.class);
@@ -59,8 +61,14 @@ public class ApiController {
         }
     }
 
+    @RequestMapping(value = {"/v1/test"}, method = RequestMethod.GET)
+    public String testMethod(@RequestParam String id) {
+        return "id received: " + id;
+    }
+
     @RequestMapping(value = {"/v1/gameUp/login"}, method = RequestMethod.POST)
     public ResponseEntity<String> login(@RequestBody String loginInfoJson) {
+        System.out.println("In login");
         try {
             ObjectMapper mapper = new ObjectMapper();
             LoginDetails loginDetails = mapper.readValue(loginInfoJson, LoginDetails.class);
@@ -103,6 +111,7 @@ public class ApiController {
 
     @RequestMapping(value = {"/v1/gameUp/selfRegistration"}, method = RequestMethod.POST)
     public ResponseEntity<String> selfRegistration(@RequestBody String selfRegistrationJson) {
+        System.out.println("In selfRegistration");
         try {
             ObjectMapper mapper = new ObjectMapper();
             SelfRegistration selfRegistration = mapper.readValue(selfRegistrationJson, SelfRegistration.class);
@@ -137,6 +146,7 @@ public class ApiController {
 
     @RequestMapping(value = {"/v1/gameUp/pairUpRegistration"}, method = RequestMethod.POST)
     public ResponseEntity<String> pairUpRegistration(@RequestBody String pairUpRegistrationJson) {
+        System.out.println("In pairUpRegistration");
         try {
             ObjectMapper mapper = new ObjectMapper();
             PairUpRegistration pairUpRegistration = mapper.readValue(pairUpRegistrationJson, PairUpRegistration.class);
