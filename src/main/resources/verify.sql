@@ -1,1 +1,1 @@
-select * from dbo.users_donate_it where email = '@{email}';
+select * from users_donate_it where email = '@{email}';
