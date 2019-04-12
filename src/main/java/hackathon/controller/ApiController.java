@@ -2,7 +2,6 @@ package hackathon.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
-import com.google.common.base.Preconditions;
 import com.google.common.io.Resources;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
@@ -50,6 +49,7 @@ public class ApiController {
         try {
             ObjectMapper mapper = new ObjectMapper();
             UserInfo userInfo = mapper.readValue(userInfoJson, UserInfo.class);
+            System.out.println("SignUp : " +userInfo);
             if (signUpDbInsert(getContextMap(userInfo))) {
                 return new ResponseEntity<>("SignUpSuccessfull", HttpStatus.ACCEPTED);
             } else {
@@ -72,6 +72,8 @@ public class ApiController {
         try {
             ObjectMapper mapper = new ObjectMapper();
             LoginDetails loginDetails = mapper.readValue(loginInfoJson, LoginDetails.class);
+
+            System.out.println("Login : "+loginDetails);
             if (StringUtils.isEmpty(loginDetails.getEmail()) || StringUtils.isEmpty(loginDetails.getPassword())) {
                 return new ResponseEntity<>("Email or Password Can't be Empty", HttpStatus.BAD_REQUEST);
             }
@@ -236,15 +238,15 @@ public class ApiController {
 
     private HashMap<String, String> getContextMap(UserInfo userInfo) {
         HashMap<String, String> contextMap = new HashMap<>();
-        contextMap.put("NAME", userInfo.getName());
+        contextMap.put("name", userInfo.getName());
         contextMap.put("email", userInfo.getEmail());
-        contextMap.put("PASSWORD", userInfo.getPassword());
-        contextMap.put("dob", userInfo.getDob());
-        contextMap.put("age_grp", userInfo.getAge_grp());
+        contextMap.put("password", userInfo.getPassword());
+        contextMap.put("age", userInfo.getAge());
         contextMap.put("gender", userInfo.getGender());
         contextMap.put("phone", userInfo.getPhone());
-        contextMap.put("indoor", String.join(",", userInfo.getIndoor()));
-        contextMap.put("outdoor", String.join(",", userInfo.getOutdoor()));
+        contextMap.put("blood_group", userInfo.getBloodGroup());
+        contextMap.put("weight", userInfo.getWeight());
+        contextMap.put("address", userInfo.getAddress());
         return contextMap;
     }
 
@@ -260,18 +262,14 @@ public class ApiController {
         String url = "jdbc:sqlserver://idsp-cluster-preprod-v2-sqlserver.database.windows.net:1433;" +
                 "database=warehouse;user=platform@idsp-cluster-preprod-v2-sqlserver;password=iDspData2018;encrypt=true;" +
                 "trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;";
-        Connection connection = null;
         return DriverManager.getConnection(url);
     }
 
     private static UserInfo getUserInfo(ResultSet resultSet) throws SQLException {
         UserInfo userInfo = new UserInfo();
-        userInfo.setAge_grp(resultSet.getString("age_grp"));
-        userInfo.setDob(resultSet.getString("dob"));
+        userInfo.setAge(resultSet.getString("age"));
         userInfo.setEmail(resultSet.getString("email"));
         userInfo.setGender(resultSet.getString("gender"));
-        userInfo.setIndoor(new ArrayList(Arrays.asList(resultSet.getString("indoor").split(","))));
-        userInfo.setOutdoor(new ArrayList(Arrays.asList(resultSet.getString("outdoor").split(","))));
         userInfo.setName(resultSet.getString("name"));
         userInfo.setPhone(resultSet.getString("phone"));
         return userInfo;
@@ -396,5 +394,9 @@ public class ApiController {
         }
         connection.close();
         return pairUpList;
+    }
+
+    public static void main(String[] args) {
+
     }
 }
