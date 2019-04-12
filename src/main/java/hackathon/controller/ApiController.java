@@ -403,13 +403,16 @@ public class ApiController {
         String url = "jdbc:mysql://mysql-donateit.1d35.starter-us-east-1.openshiftapps.com/userprofile";
         Class.forName ("com.mysql.jdbc.Driver").newInstance ();
         Connection conn = DriverManager.getConnection (url, "admin", "admin");
+        System.out.println("Got connection  :" + conn);
 
         try {
             try (Statement statement = conn.createStatement()) {
                 // need to update paired status for user 2
                 String rawQuery = Resources.toString(Resources
                         .getResource("test.sql"), Charsets.UTF_8);
+                System.out.println(rawQuery);
                 ResultSet rs = statement.executeQuery(rawQuery);
+                System.out.println("ResultSet :" + rs);
                 while (rs.next())
                 {
                     String firstName = rs.getString("name");
