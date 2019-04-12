@@ -1,1 +1,0 @@
-select *  from tournament_booked join dbo.users_donate_it on dbo.tournament_booked.user1_email = dbo.users_donate_it.email where email <> '@{email}' and paired = 0;
