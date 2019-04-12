@@ -257,10 +257,9 @@ public class ApiController {
     }
 
     private static Connection getConnection() throws SQLException {
-        String url = "jdbc:sqlserver://codiecon.database.windows.net:1433;database=codeicon;" +
-                "user=satish@codiecon;" +
-                "password=Nitssats123;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;" +
-                "loginTimeout=30;";
+        String url = "jdbc:sqlserver://idsp-cluster-preprod-v2-sqlserver.database.windows.net:1433;" +
+                "database=warehouse;user=platform@idsp-cluster-preprod-v2-sqlserver;password=iDspData2018;encrypt=true;" +
+                "trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;";
         Connection connection = null;
         return DriverManager.getConnection(url);
     }
