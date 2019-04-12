@@ -258,11 +258,17 @@ public class ApiController {
         return resultSet.next();
     }
 
-    private static Connection getConnection() throws SQLException {
-        String url = "jdbc:sqlserver://idsp-cluster-preprod-v2-sqlserver.database.windows.net:1433;" +
-                "database=warehouse;user=platform@idsp-cluster-preprod-v2-sqlserver;password=iDspData2018;encrypt=true;" +
-                "trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;";
-        return DriverManager.getConnection(url);
+    private static Connection getConnection() throws Exception {
+//        String url = "jdbc:sqlserver://idsp-cluster-preprod-v2-sqlserver.database.windows.net:1433;" +
+//                "database=warehouse;user=platform@idsp-cluster-preprod-v2-sqlserver;password=iDspData2018;encrypt=true;" +
+//                "trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;";
+//        return DriverManager.getConnection(url);
+        String url = "jdbc:mysql://10.131.29.134:3306/userprofile";
+        System.out.println(url);
+        Class.forName ("com.mysql.jdbc.Driver").newInstance ();
+        Connection conn = DriverManager.getConnection (url, "admin", "admin");
+        System.out.println("Got connection  :" + conn);
+        return conn;
     }
 
     private static UserInfo getUserInfo(ResultSet resultSet) throws SQLException {
@@ -401,6 +407,7 @@ public class ApiController {
         System.out.println("In test");
 
         String url = "jdbc:mysql://10.131.29.134:3306/userprofile";
+        System.out.println(url);
         Class.forName ("com.mysql.jdbc.Driver").newInstance ();
         Connection conn = DriverManager.getConnection (url, "admin", "admin");
         System.out.println("Got connection  :" + conn);
