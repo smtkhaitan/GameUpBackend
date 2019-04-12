@@ -2,7 +2,6 @@ package hackathon.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
-import com.google.common.base.Preconditions;
 import com.google.common.io.Resources;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
@@ -23,6 +22,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
@@ -45,6 +45,7 @@ public class ApiController {
 
     @RequestMapping(value = {"/v1/gameUp/signUp"}, method = RequestMethod.POST)
     public ResponseEntity<String> signUp(@RequestBody String userInfoJson) {
+        System.out.println("In SignUp");
         try {
             ObjectMapper mapper = new ObjectMapper();
             UserInfo userInfo = mapper.readValue(userInfoJson, UserInfo.class);
@@ -60,8 +61,14 @@ public class ApiController {
         }
     }
 
+    @RequestMapping(value = {"/"})
+    public String testMethod(@RequestParam String id) {
+        return "id received: " + id;
+    }
+
     @RequestMapping(value = {"/v1/gameUp/login"}, method = RequestMethod.POST)
     public ResponseEntity<String> login(@RequestBody String loginInfoJson) {
+        System.out.println("In login");
         try {
             ObjectMapper mapper = new ObjectMapper();
             LoginDetails loginDetails = mapper.readValue(loginInfoJson, LoginDetails.class);
@@ -106,6 +113,7 @@ public class ApiController {
 
     @RequestMapping(value = {"/v1/gameUp/selfRegistration"}, method = RequestMethod.POST)
     public ResponseEntity<String> selfRegistration(@RequestBody String selfRegistrationJson) {
+        System.out.println("In selfRegistration");
         try {
             ObjectMapper mapper = new ObjectMapper();
             SelfRegistration selfRegistration = mapper.readValue(selfRegistrationJson, SelfRegistration.class);
@@ -140,6 +148,7 @@ public class ApiController {
 
     @RequestMapping(value = {"/v1/gameUp/pairUpRegistration"}, method = RequestMethod.POST)
     public ResponseEntity<String> pairUpRegistration(@RequestBody String pairUpRegistrationJson) {
+        System.out.println("In pairUpRegistration");
         try {
             ObjectMapper mapper = new ObjectMapper();
             PairUpRegistration pairUpRegistration = mapper.readValue(pairUpRegistrationJson, PairUpRegistration.class);
@@ -250,13 +259,9 @@ public class ApiController {
     }
 
     private static Connection getConnection() throws SQLException {
-//        String url = "jdbc:sqlserver://codiecon.database.windows.net:1433;database=codeicon;" +
-//                "user=satish@codiecon;" +
-//                "password=Nitssats123;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;" +
-//                "loginTimeout=30;";
-
         String url = "jdbc:sqlserver://idsp-cluster-preprod-v2-sqlserver.database.windows.net:1433;" +
-                "database=warehouse;user=platform@idsp-cluster-preprod-v2-sqlserver;password=iDspData2018;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;";
+                "database=warehouse;user=platform@idsp-cluster-preprod-v2-sqlserver;password=iDspData2018;encrypt=true;" +
+                "trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;";
         return DriverManager.getConnection(url);
     }
 
