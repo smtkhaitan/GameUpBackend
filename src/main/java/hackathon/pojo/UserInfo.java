@@ -10,11 +10,11 @@ import java.util.ArrayList;
 public class UserInfo {
     public String name;
     public String email;
-    public String dob;
-    public String age_grp;
+    public String age;
     public String phone;
     public String password;
     public String gender;
-    public ArrayList<String> outdoor;
-    public ArrayList<String> indoor;
+    public String bloodGroup;
+    public String weight;
+    public String address;
 }
