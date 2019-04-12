@@ -400,7 +400,7 @@ public class ApiController {
     public ResponseEntity<String> test(@RequestBody String testJson) throws Exception {
         System.out.println("In test");
 
-        String url = "jdbc:mysql://mysql-donateit.1d35.starter-us-east-1.openshiftapps.com:3306/userprofile";
+        String url = "jdbc:mysql://10.131.29.134:3306/userprofile";
         Class.forName ("com.mysql.jdbc.Driver").newInstance ();
         Connection conn = DriverManager.getConnection (url, "admin", "admin");
         System.out.println("Got connection  :" + conn);
