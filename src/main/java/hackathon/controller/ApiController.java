@@ -61,7 +61,7 @@ public class ApiController {
         }
     }
 
-    @RequestMapping(value = {"/v1/test"}, method = RequestMethod.GET)
+    @RequestMapping(value = {"/"})
     public String testMethod(@RequestParam String id) {
         return "id received: " + id;
     }
