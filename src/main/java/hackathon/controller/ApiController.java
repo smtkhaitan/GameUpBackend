@@ -286,15 +286,15 @@ public class ApiController {
         Gson gson = new Gson();
         jsonObject.addProperty("userInfo", gson.toJson(userInfo));
 
-        List<BookingDetails> bookingDetailsList = getBookingDetails(userInfo.getEmail());
-        JsonElement element = gson.toJsonTree(bookingDetailsList, new TypeToken<List<BookingDetails>>() {
-        }.getType());
-        jsonObject.addProperty("bookingDetailsList", element.getAsJsonArray().toString());
+//        List<BookingDetails> bookingDetailsList = getBookingDetails(userInfo.getEmail());
+//        JsonElement element = gson.toJsonTree(bookingDetailsList, new TypeToken<List<BookingDetails>>() {
+//        }.getType());
+        jsonObject.addProperty("bookingDetailsList", "");
 
-        List<PairUp> pairUpList = getPairUpList(userInfo, loginDetails);
-        element = gson.toJsonTree(pairUpList, new TypeToken<List<PairUp>>() {
-        }.getType());
-        jsonObject.addProperty("usersAvailableToPairUp", element.getAsJsonArray().toString());
+//        List<PairUp> pairUpList = getPairUpList(userInfo, loginDetails);
+//        element = gson.toJsonTree(pairUpList, new TypeToken<List<PairUp>>() {
+//        }.getType());
+        jsonObject.addProperty("usersAvailableToPairUp", "");
         return jsonObject;
     }
 
